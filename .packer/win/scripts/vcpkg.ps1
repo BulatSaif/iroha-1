@@ -3,7 +3,7 @@ param (
     [string]$iroha_vcpkg_path = "C:\Windows\Temp\vcpkg"
 )
 
-$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';
+
 
 echo "Cloning and setting up vcpkg"
 git clone https://github.com/Microsoft/vcpkg.git $vcpkg_path
