@@ -11,7 +11,7 @@
 def buildSteps(int parallelism, List compilerVersions, String buildType, boolean coverage, boolean testing, String testList,
        boolean packageBuild, boolean useBTF, List environment) {
   withEnv(environment) {
-    stage('Prepare Windows environment') {
+    //stage('Prepare Windows environment') {
     scmVars = checkout scm
       powershell """
         if(!(Test-Path C:\\vcpkg-1.1.x\\scripts\\buildsystems\\vcpkg.cmake))
@@ -22,7 +22,7 @@ def buildSteps(int parallelism, List compilerVersions, String buildType, boolean
           Add-Content c:\\vcpkg-map.txt "${scmVars.GIT_LOCAL_BRANCH} finish build C:\\vcpkg-1.1.x"
         }
       """
-    }
+    //}
     for (compiler in compilerVersions) {
       stage ("build ${compiler}"){
         bat '''

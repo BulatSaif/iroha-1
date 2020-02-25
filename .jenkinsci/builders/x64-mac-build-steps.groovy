@@ -48,7 +48,7 @@ def buildSteps(int parallelism, List compilerVersions, String build_type, boolea
     if (packagebuild){
       cmakeBuildOptions = " --target package "
     }
-    stage('Prepare Mac environment') {
+    //stage('Prepare Mac environment') {
     scmVars = checkout scm
     utils.ccacheSetup(5)
 
@@ -60,7 +60,7 @@ def buildSteps(int parallelism, List compilerVersions, String build_type, boolea
         echo "${scmVars.GIT_LOCAL_BRANCH} finish build /opt/dependencies/vcpkg-1.1.x" >> /opt/dependencies/vcpkg-map.txt
         ls -la /opt/dependencies/vcpkg-1.1.x
       """
-    }
+   // }
     }
     for (compiler in compilerVersions) {
       stage ("build ${compiler}"){
