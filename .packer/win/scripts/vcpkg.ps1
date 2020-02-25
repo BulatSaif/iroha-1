@@ -9,7 +9,7 @@ echo "Cloning and setting up vcpkg"
 git clone https://github.com/Microsoft/vcpkg.git $vcpkg_path
 
 echo "Checkout to commit"
-git -C $vcpkg_path checkout (Get-Content -Path $iroha_vcpkg_path\VCPKG_COMMIT_SHA)
+git -C $vcpkg_path checkout (Get-Content -Path $iroha_vcpkg_path\VCPKG_COMMIT_SHA)  2>&1
 
 echo "Apply patches to vcpkg"
 foreach($file in Get-ChildItem $iroha_vcpkg_path\patches -Filter *.patch) { git -C $vcpkg_path apply $file.FullName }

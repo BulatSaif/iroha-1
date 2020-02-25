@@ -13,19 +13,15 @@ def buildSteps(int parallelism, List compilerVersions, String buildType, boolean
   withEnv(environment) {
     //stage('Prepare Windows environment') {
     scmVars = checkout scm
-    bat """
-      rmdir c:\\vcpkg2
-      powershell -File .packer\\win\\scripts\\vcpkg.ps1 -vcpkg_path "C:\\vcpkg-1.1.x" -iroha_vcpkg_path "${env.WORKSPACE}\\vcpkg"
-    """
-//      powershell """
+
 //        if(!(Test-Path C:\\vcpkg-1.1.x\\scripts\\buildsystems\\vcpkg.cmake))
 //        {
-//          if (Test-Path 'C:\\vcpkg-1.1.x' ) { Remove-Item 'C:\\vcpkg-1.1.x' -Recurse; }
-//          Add-Content c:\\vcpkg-map.txt "${scmVars.GIT_LOCAL_BRANCH} start  build C:\\vcpkg-1.1.x..."
-//          .\\.packer\\win\\scripts\\vcpkg.ps1 -vcpkg_path "C:\\vcpkg-1.1.x" -iroha_vcpkg_path "${env.WORKSPACE}\\vcpkg"
-//          Add-Content c:\\vcpkg-map.txt "${scmVars.GIT_LOCAL_BRANCH} finish build C:\\vcpkg-1.1.x"
-//        }
-//      """
+      powershell """
+          if (Test-Path 'C:\\vcpkg-1.1.x' ) { Remove-Item 'C:\\vcpkg-1.1.x' -Recurse -Force; }
+          Add-Content c:\\vcpkg-map.txt "${scmVars.GIT_LOCAL_BRANCH} start  build C:\\vcpkg-1.1.x..."
+          .\\.packer\\win\\scripts\\vcpkg.ps1 -vcpkg_path "C:\\vcpkg-1.1.x" -iroha_vcpkg_path "${env.WORKSPACE}\\vcpkg"
+          Add-Content c:\\vcpkg-map.txt "${scmVars.GIT_LOCAL_BRANCH} finish build C:\\vcpkg-1.1.x"
+      """
     //}
     for (compiler in compilerVersions) {
       stage ("build ${compiler}"){
