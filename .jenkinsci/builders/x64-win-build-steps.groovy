@@ -17,6 +17,7 @@ def buildSteps(int parallelism, List compilerVersions, String buildType, boolean
 //        if(!(Test-Path C:\\vcpkg-1.1.x\\scripts\\buildsystems\\vcpkg.cmake))
 //        {
       powershell """
+          \$env:GIT_REDIRECT_STDERR = '2>&1'
           if (Test-Path 'C:\\vcpkg-1.1.x' ) { Remove-Item 'C:\\vcpkg-1.1.x' -Recurse -Force; }
           Add-Content c:\\vcpkg-map.txt "${scmVars.GIT_LOCAL_BRANCH} start  build C:\\vcpkg-1.1.x..."
           .\\.packer\\win\\scripts\\vcpkg.ps1 -vcpkg_path "C:\\vcpkg-1.1.x" -iroha_vcpkg_path "${env.WORKSPACE}\\vcpkg"
