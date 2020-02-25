@@ -37,8 +37,6 @@ def testSteps(scmVars, String buildDir, List environment, String testList) {
 def buildSteps(int parallelism, List compilerVersions, String build_type, boolean coverage, boolean testing, String testList,
        boolean packagebuild, boolean fuzzing, boolean useBTF, List environment) {
   withEnv(environment) {
-    stage('Prepare Mac environment') {
-    scmVars = checkout scm
     def build = load '.jenkinsci/build.groovy'
     def vars = load ".jenkinsci/utils/vars.groovy"
     def utils = load ".jenkinsci/utils/utils.groovy"
@@ -50,7 +48,8 @@ def buildSteps(int parallelism, List compilerVersions, String build_type, boolea
     if (packagebuild){
       cmakeBuildOptions = " --target package "
     }
-
+    stage('Prepare Mac environment') {
+    scmVars = checkout scm
     utils.ccacheSetup(5)
 
     if (!fileExists("/opt/dependencies/vcpkg-1.1.x/scripts/buildsystems/vcpkg.cmake")) {
