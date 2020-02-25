@@ -37,6 +37,7 @@ def testSteps(scmVars, String buildDir, List environment, String testList) {
 def buildSteps(int parallelism, List compilerVersions, String build_type, boolean coverage, boolean testing, String testList,
        boolean packagebuild, boolean fuzzing, boolean useBTF, List environment) {
   withEnv(environment) {
+    stage('Prepare Mac environment') {
     scmVars = checkout scm
     def build = load '.jenkinsci/build.groovy'
     def vars = load ".jenkinsci/utils/vars.groovy"
@@ -52,6 +53,16 @@ def buildSteps(int parallelism, List compilerVersions, String build_type, boolea
 
     utils.ccacheSetup(5)
 
+    if (!fileExists("/opt/dependencies/vcpkg-1.1.x/scripts/buildsystems/vcpkg.cmake")) {
+      sh """
+        rm -rf /opt/dependencies/vcpkg-1.1.x
+        echo "${scmVars.GIT_LOCAL_BRANCH} start  build /opt/dependencies/vcpkg-1.1.x..." >> /opt/dependencies/vcpkg-map.txt
+        bash vcpkg/build_iroha_deps.sh '/opt/dependencies/vcpkg-1.1.x' '${env.WORKSPACE}/vcpkg'
+        echo "${scmVars.GIT_LOCAL_BRANCH} finish build /opt/dependencies/vcpkg-1.1.x" >> /opt/dependencies/vcpkg-map.txt
+        ls -la /opt/dependencies/vcpkg-1.1.x
+      """
+    }
+    }
     for (compiler in compilerVersions) {
       stage ("build ${compiler}"){
         // Remove artifacts from the previous build
@@ -65,7 +76,7 @@ def buildSteps(int parallelism, List compilerVersions, String build_type, boolea
         -DFUZZING=${cmakeBooleanOption[fuzzing]} \
         -DPACKAGE_TGZ=${cmakeBooleanOption[packagebuild]} \
         -DUSE_BTF=${cmakeBooleanOption[useBTF]} \
-        -DCMAKE_TOOLCHAIN_FILE=/opt/dependencies/scripts/buildsystems/vcpkg.cmake ")
+        -DCMAKE_TOOLCHAIN_FILE=/opt/dependencies/vcpkg-1.1.x/scripts/buildsystems/vcpkg.cmake ")
 
         build.cmakeBuild(buildDir, cmakeBuildOptions, parallelism)
       }
