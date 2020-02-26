@@ -39,30 +39,35 @@ def buildSteps(int parallelism, List compilerVersions, String build_type, boolea
   withEnv(environment) {
     def build, vars, utils
     stage('Prepare Mac environment') {
-    scmVars = checkout scm
-    build = load '.jenkinsci/build.groovy'
-    vars = load ".jenkinsci/utils/vars.groovy"
-    utils = load ".jenkinsci/utils/utils.groovy"
-    buildDir = 'build'
-    compilers = vars.compilerMapping()
-    cmakeBooleanOption = [ (true): 'ON', (false): 'OFF' ]
-    cmakeBuildOptions = ""
+      scmVars = checkout scm
+      build = load '.jenkinsci/build.groovy'
+      vars = load ".jenkinsci/utils/vars.groovy"
+      utils = load ".jenkinsci/utils/utils.groovy"
+      buildDir = 'build'
+      compilers = vars.compilerMapping()
+      cmakeBooleanOption = [ (true): 'ON', (false): 'OFF' ]
+      cmakeBuildOptions = ""
+      vcpkg_name = "vcpkg-${env.VCPKG_IROHA_HASH}"
+      if (packagebuild){
+        cmakeBuildOptions = " --target package "
+      }
 
-    if (packagebuild){
-      cmakeBuildOptions = " --target package "
-    }
+      utils.ccacheSetup(5)
 
-    utils.ccacheSetup(5)
-
-    if (!fileExists("/opt/dependencies/vcpkg-1.1.x/scripts/buildsystems/vcpkg.cmake")) {
-      sh """
-        rm -rf /opt/dependencies/vcpkg-1.1.x
-        echo "${scmVars.GIT_LOCAL_BRANCH} start  build /opt/dependencies/vcpkg-1.1.x..." >> /opt/dependencies/vcpkg-map.txt
-        bash vcpkg/build_iroha_deps.sh '/opt/dependencies/vcpkg-1.1.x' '${env.WORKSPACE}/vcpkg'
-        echo "${scmVars.GIT_LOCAL_BRANCH} finish build /opt/dependencies/vcpkg-1.1.x" >> /opt/dependencies/vcpkg-map.txt
-        ls -la /opt/dependencies/vcpkg-1.1.x
-      """
-    }
+      if (!fileExists("/opt/dependencies/${vcpkg_name}/scripts/buildsystems/vcpkg.cmake")) {
+        local_vcpkg_hash = sh(script: "python .jenkinsci/helpers/hash.py vcpkg", returnStdout: true).trim()
+        if ( env.VCPKG_IROHA_HASH == local_vcpkg_hash){
+          sh """
+            rm -rf /opt/dependencies/${vcpkg_name}
+            echo "${java.time.LocalDateTime.now()}: ${scmVars.GIT_LOCAL_BRANCH} start  build /opt/dependencies/${vcpkg_name}..." >> /opt/dependencies/vcpkg-map.txt
+            bash vcpkg/build_iroha_deps.sh '/opt/dependencies/${vcpkg_name}' '${env.WORKSPACE}/vcpkg'
+            echo "${java.time.LocalDateTime.now()}: ${scmVars.GIT_LOCAL_BRANCH} finish build /opt/dependencies/${vcpkg_name}" >> /opt/dependencies/vcpkg-map.txt
+            ls -la /opt/dependencies/${vcpkg_name}
+          """
+        }else{
+          error("Build require VCPKG_IROHA_HASH=${env.VCPKG_IROHA_HASH}, server do not have cache and this branch have ${local_vcpkg_hash}")
+        }
+      }
     }
     for (compiler in compilerVersions) {
       stage ("build ${compiler}"){
@@ -77,7 +82,7 @@ def buildSteps(int parallelism, List compilerVersions, String build_type, boolea
         -DFUZZING=${cmakeBooleanOption[fuzzing]} \
         -DPACKAGE_TGZ=${cmakeBooleanOption[packagebuild]} \
         -DUSE_BTF=${cmakeBooleanOption[useBTF]} \
-        -DCMAKE_TOOLCHAIN_FILE=/opt/dependencies/vcpkg-1.1.x/scripts/buildsystems/vcpkg.cmake ")
+        -DCMAKE_TOOLCHAIN_FILE=/opt/dependencies/${vcpkg_name}/scripts/buildsystems/vcpkg.cmake ")
 
         build.cmakeBuild(buildDir, cmakeBuildOptions, parallelism)
       }

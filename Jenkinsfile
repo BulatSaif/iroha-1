@@ -157,6 +157,7 @@ node ('master') {
   useBTF = false
   forceDockerDevelopBuild = false
   checkTag = sh(script: "git describe --tags --exact-match ${scmVars.GIT_COMMIT}", returnStatus: true)
+  environment["VCPKG_IROHA_HASH"] = sh(script: "python .jenkinsci/helpers/hash.py vcpkg", returnStdout: true).trim()
 
   if (scmVars.GIT_LOCAL_BRANCH in ["master"] || checkTag == 0 )
     specialBranch =  true
