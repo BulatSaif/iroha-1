@@ -47,7 +47,9 @@ def buildSteps(int parallelism, List compilerVersions, String build_type, boolea
       compilers = vars.compilerMapping()
       cmakeBooleanOption = [ (true): 'ON', (false): 'OFF' ]
       cmakeBuildOptions = ""
-      vcpkg_name = "vcpkg-${env.VCPKG_IROHA_HASH}"
+      local_vcpkg_hash = sh(script: "python .jenkinsci/helpers/hash.py vcpkg", returnStdout: true).trim()
+      vcpkg_name = "vcpkg-${local_vcpkg_hash}"
+
       if (packagebuild){
         cmakeBuildOptions = " --target package "
       }
@@ -55,18 +57,13 @@ def buildSteps(int parallelism, List compilerVersions, String build_type, boolea
       utils.ccacheSetup(5)
 
       if (!fileExists("/opt/dependencies/${vcpkg_name}/scripts/buildsystems/vcpkg.cmake")) {
-        local_vcpkg_hash = sh(script: "python .jenkinsci/helpers/hash.py vcpkg", returnStdout: true).trim()
-        if ( env.VCPKG_IROHA_HASH == local_vcpkg_hash){
-          sh """
-            rm -rf /opt/dependencies/${vcpkg_name}
-            echo "${java.time.LocalDateTime.now()}: ${scmVars.GIT_LOCAL_BRANCH} start  build /opt/dependencies/${vcpkg_name}..." >> /opt/dependencies/vcpkg-map.txt
-            bash vcpkg/build_iroha_deps.sh '/opt/dependencies/${vcpkg_name}' '${env.WORKSPACE}/vcpkg'
-            echo "${java.time.LocalDateTime.now()}: ${scmVars.GIT_LOCAL_BRANCH} finish build /opt/dependencies/${vcpkg_name}" >> /opt/dependencies/vcpkg-map.txt
-            ls -la /opt/dependencies/${vcpkg_name}
-          """
-        }else{
-          error("Build require VCPKG_IROHA_HASH=${env.VCPKG_IROHA_HASH}, server do not have cache and this branch have ${local_vcpkg_hash}")
-        }
+        sh """
+          rm -rf /opt/dependencies/${vcpkg_name}
+          echo "${java.time.LocalDateTime.now()}: ${scmVars.GIT_LOCAL_BRANCH} start  build /opt/dependencies/${vcpkg_name}..." >> /opt/dependencies/vcpkg-map.txt
+          bash vcpkg/build_iroha_deps.sh '/opt/dependencies/${vcpkg_name}' '${env.WORKSPACE}/vcpkg'
+          echo "${java.time.LocalDateTime.now()}: ${scmVars.GIT_LOCAL_BRANCH} finish build /opt/dependencies/${vcpkg_name}" >> /opt/dependencies/vcpkg-map.txt
+          ls -la /opt/dependencies/${vcpkg_name}
+        """
       }
     }
     for (compiler in compilerVersions) {
