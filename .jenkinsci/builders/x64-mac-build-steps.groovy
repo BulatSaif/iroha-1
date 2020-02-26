@@ -37,10 +37,12 @@ def testSteps(scmVars, String buildDir, List environment, String testList) {
 def buildSteps(int parallelism, List compilerVersions, String build_type, boolean coverage, boolean testing, String testList,
        boolean packagebuild, boolean fuzzing, boolean useBTF, List environment) {
   withEnv(environment) {
+    def build, vars, utils
+    stage('Prepare Mac environment') {
     scmVars = checkout scm
-    def build = load '.jenkinsci/build.groovy'
-    def vars = load ".jenkinsci/utils/vars.groovy"
-    def utils = load ".jenkinsci/utils/utils.groovy"
+    build = load '.jenkinsci/build.groovy'
+    vars = load ".jenkinsci/utils/vars.groovy"
+    utils = load ".jenkinsci/utils/utils.groovy"
     buildDir = 'build'
     compilers = vars.compilerMapping()
     cmakeBooleanOption = [ (true): 'ON', (false): 'OFF' ]
@@ -49,7 +51,6 @@ def buildSteps(int parallelism, List compilerVersions, String build_type, boolea
     if (packagebuild){
       cmakeBuildOptions = " --target package "
     }
-    //stage('Prepare Mac environment') {
 
     utils.ccacheSetup(5)
 
@@ -61,7 +62,7 @@ def buildSteps(int parallelism, List compilerVersions, String build_type, boolea
         echo "${scmVars.GIT_LOCAL_BRANCH} finish build /opt/dependencies/vcpkg-1.1.x" >> /opt/dependencies/vcpkg-map.txt
         ls -la /opt/dependencies/vcpkg-1.1.x
       """
-   // }
+    }
     }
     for (compiler in compilerVersions) {
       stage ("build ${compiler}"){
