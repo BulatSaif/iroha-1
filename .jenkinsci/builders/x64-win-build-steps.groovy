@@ -13,7 +13,7 @@ def buildSteps(int parallelism, List compilerVersions, String buildType, boolean
   withEnv(environment) {
     stage('Prepare Windows environment') {
       scmVars = checkout scm
-      local_vcpkg_hash = sh(script: "python .jenkinsci/helpers/hash.py vcpkg", returnStdout: true).trim()
+      local_vcpkg_hash = bat(script: "python .jenkinsci\\helpers\\hash.py vcpkg", returnStdout: true).trim()
       vcpkg_name = "vcpkg-${local_vcpkg_hash}"
 
       if (!fileExists("C:\\${vcpkg_name}\\scripts\\buildsystems\\vcpkg.cmake")) {
