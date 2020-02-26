@@ -13,16 +13,16 @@ def buildSteps(int parallelism, List compilerVersions, String buildType, boolean
   withEnv(environment) {
     stage('Prepare Windows environment') {
       scmVars = checkout scm
-      local_vcpkg_hash = bat(script: "python .jenkinsci\\helpers\\hash.py vcpkg", returnStdout: true).trim()
+      local_vcpkg_hash = bat(script: "python .jenkinsci\\helpers\\hash.py vcpkg", returnStdout: true).trim().readLines()[-1].trim()
       vcpkg_name = "vcpkg-${local_vcpkg_hash}"
 
       if (!fileExists("C:\\${vcpkg_name}\\scripts\\buildsystems\\vcpkg.cmake")) {
         powershell """
             \$env:GIT_REDIRECT_STDERR = '2>&1'
             if (Test-Path 'C:\\${vcpkg_name}' ) { Remove-Item 'C:\\${vcpkg_name}' -Recurse -Force; }
-            Add-Content c:\\vcpkg-map.txt "${java.time.LocalDateTime.now()}: ${scmVars.GIT_LOCAL_BRANCH} start  build C:\\${vcpkg_name}..."
+            Add-Content c:\\vcpkg-map.txt "\$(Get-Date): ${scmVars.GIT_LOCAL_BRANCH} start  build C:\\${vcpkg_name}..."
             .\\.packer\\win\\scripts\\vcpkg.ps1 -vcpkg_name "C:\\${vcpkg_name}" -iroha_vcpkg_name "${env.WORKSPACE}\\vcpkg"
-            Add-Content c:\\vcpkg-map.txt "${java.time.LocalDateTime.now()}: ${scmVars.GIT_LOCAL_BRANCH} finish build C:\\${vcpkg_name}"
+            Add-Content c:\\vcpkg-map.txt "\$(Get-Date): ${scmVars.GIT_LOCAL_BRANCH} finish build C:\\${vcpkg_name}"
         """
       }
     }

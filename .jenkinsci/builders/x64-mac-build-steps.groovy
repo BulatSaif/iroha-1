@@ -59,9 +59,9 @@ def buildSteps(int parallelism, List compilerVersions, String build_type, boolea
       if (!fileExists("/opt/dependencies/${vcpkg_name}/scripts/buildsystems/vcpkg.cmake")) {
         sh """
           rm -rf /opt/dependencies/${vcpkg_name}
-          echo "${java.time.LocalDateTime.now()}: ${scmVars.GIT_LOCAL_BRANCH} start  build /opt/dependencies/${vcpkg_name}..." >> /opt/dependencies/vcpkg-map.txt
+          echo "\$(date +%F_%T): ${scmVars.GIT_LOCAL_BRANCH} start  build /opt/dependencies/${vcpkg_name}..." >> /opt/dependencies/vcpkg-map.txt
           bash vcpkg/build_iroha_deps.sh '/opt/dependencies/${vcpkg_name}' '${env.WORKSPACE}/vcpkg'
-          echo "${java.time.LocalDateTime.now()}: ${scmVars.GIT_LOCAL_BRANCH} finish build /opt/dependencies/${vcpkg_name}" >> /opt/dependencies/vcpkg-map.txt
+          echo "\$(date +%F_%T): ${scmVars.GIT_LOCAL_BRANCH} finish build /opt/dependencies/${vcpkg_name}" >> /opt/dependencies/vcpkg-map.txt
           ls -la /opt/dependencies/${vcpkg_name}
         """
       }
