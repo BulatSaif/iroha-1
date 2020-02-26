@@ -24,7 +24,6 @@ def buildSteps(int parallelism, List compilerVersions, String buildType, boolean
             .\\.packer\\win\\scripts\\vcpkg.ps1 -vcpkg_name "C:\\${vcpkg_name}" -iroha_vcpkg_name "${env.WORKSPACE}\\vcpkg"
             Add-Content c:\\vcpkg-map.txt "${java.time.LocalDateTime.now()}: ${scmVars.GIT_LOCAL_BRANCH} finish build C:\\${vcpkg_name}"
         """
-        }
       }
     }
     for (compiler in compilerVersions) {
