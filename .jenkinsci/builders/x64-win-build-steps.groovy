@@ -21,7 +21,7 @@ def buildSteps(int parallelism, List compilerVersions, String buildType, boolean
             \$env:GIT_REDIRECT_STDERR = '2>&1'
             if (Test-Path 'C:\\${vcpkg_name}' ) { Remove-Item 'C:\\${vcpkg_name}' -Recurse -Force; }
             Add-Content c:\\vcpkg-map.txt "\$(Get-Date): ${scmVars.GIT_LOCAL_BRANCH} start  build C:\\${vcpkg_name}..."
-            .\\.packer\\win\\scripts\\vcpkg.ps1 -vcpkg_name "C:\\${vcpkg_name}" -iroha_vcpkg_name "${env.WORKSPACE}\\vcpkg"
+            .\\.packer\\win\\scripts\\vcpkg.ps1 -vcpkg_path "C:\\${vcpkg_name}" -iroha_vcpkg_name "${env.WORKSPACE}\\vcpkg"
             Add-Content c:\\vcpkg-map.txt "\$(Get-Date): ${scmVars.GIT_LOCAL_BRANCH} finish build C:\\${vcpkg_name}"
         """
       }
