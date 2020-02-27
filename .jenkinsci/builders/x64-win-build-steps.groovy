@@ -28,11 +28,11 @@ def buildSteps(int parallelism, List compilerVersions, String buildType, boolean
     }
     for (compiler in compilerVersions) {
       stage ("build ${compiler}"){
-        bat '''
+        bat """
 cmake -H.\\ -B.\\build -DCMAKE_TOOLCHAIN_FILE=C:\\${vcpkg_name}\\scripts\\buildsystems\\vcpkg.cmake -G "Visual Studio 16 2019" -A x64 -T host=x64 &&^
 cmake --build .\\build --target irohad &&^
 cmake --build .\\build --target iroha-cli
-        '''
+        """
       }
     }
   }
