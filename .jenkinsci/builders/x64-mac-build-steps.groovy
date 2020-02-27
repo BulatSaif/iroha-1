@@ -56,16 +56,7 @@ def buildSteps(int parallelism, List compilerVersions, String build_type, boolea
       }
 
       utils.ccacheSetup(5)
-
-      if (!fileExists(vcpkg_toolchain_file)) {
-        sh """
-          rm -rf /opt/dependencies/${vcpkg_path}
-          echo "\$(date +%F_%T): ${scmVars.GIT_LOCAL_BRANCH} start  build ${vcpkg_path}..." >> /opt/dependencies/vcpkg-map.txt
-          bash vcpkg/build_iroha_deps.sh '${vcpkg_path}' '${env.WORKSPACE}/vcpkg'
-          echo "\$(date +%F_%T): ${scmVars.GIT_LOCAL_BRANCH} finish build ${vcpkg_path}" >> /opt/dependencies/vcpkg-map.txt
-          ls -la ${vcpkg_path}
-        """
-      }
+      utils.build_vcpkg(vcpkg_path,vcpkg_toolchain_file)
     }
     for (compiler in compilerVersions) {
       stage ("build ${compiler}"){

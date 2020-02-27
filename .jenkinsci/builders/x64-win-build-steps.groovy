@@ -20,15 +20,7 @@ def buildSteps(int parallelism, List compilerVersions, String buildType, boolean
       vcpkg_path = "C:\\vcpkg-${local_vcpkg_hash}"
       vcpkg_toolchain_file = "${vcpkg_path}\\scripts\\buildsystems\\vcpkg.cmake"
 
-      if (!fileExists(vcpkg_toolchain_file)) {
-        powershell """
-            \$env:GIT_REDIRECT_STDERR = '2>&1'
-            if (Test-Path '${vcpkg_path}' ) { Remove-Item '${vcpkg_path}' -Recurse -Force; }
-            Add-Content c:\\vcpkg-map.txt "\$(Get-Date): ${scmVars.GIT_LOCAL_BRANCH} start  build ${vcpkg_path}..."
-            .\\.packer\\win\\scripts\\vcpkg.ps1 -vcpkg_path "${vcpkg_path}" -iroha_vcpkg_path "${env.WORKSPACE}\\vcpkg"
-            Add-Content c:\\vcpkg-map.txt "\$(Get-Date): ${scmVars.GIT_LOCAL_BRANCH} finish build ${vcpkg_path}"
-        """
-      }
+      utils.build_vcpkg(vcpkg_path,vcpkg_toolchain_file)
     }
     for (compiler in compilerVersions) {
       stage ("build ${compiler}"){
