@@ -17,12 +17,12 @@ namespace testing {
   class DefaultValue<
       iroha::expected::Result<iroha::TopBlockInfo, std::string>> {
    public:
-    using T = iroha::expected::Result<iroha::TopBlockInfo, std::string>;
+    using ValueType = iroha::expected::Result<iroha::TopBlockInfo, std::string>;
     static bool Exists() {
       return true;
     }
-    static T &Get() {
-      static T val("default error value");
+    static ValueType &Get() {
+      static ValueType val("default error value");
       return val;
     }
   };
