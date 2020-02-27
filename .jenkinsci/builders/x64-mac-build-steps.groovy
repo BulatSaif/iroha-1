@@ -48,7 +48,8 @@ def buildSteps(int parallelism, List compilerVersions, String build_type, boolea
       cmakeBooleanOption = [ (true): 'ON', (false): 'OFF' ]
       cmakeBuildOptions = ""
       local_vcpkg_hash = sh(script: "python .jenkinsci/helpers/hash.py vcpkg", returnStdout: true).trim()
-      vcpkg_name = "vcpkg-${local_vcpkg_hash}"
+      vcpkg_path = "/opt/dependencies/vcpkg-${local_vcpkg_hash}"
+      vcpkg_toolchain_file = "${vcpkg_path}/scripts/buildsystems/vcpkg.cmake"
 
       if (packagebuild){
         cmakeBuildOptions = " --target package "
@@ -56,13 +57,13 @@ def buildSteps(int parallelism, List compilerVersions, String build_type, boolea
 
       utils.ccacheSetup(5)
 
-      if (!fileExists("/opt/dependencies/${vcpkg_name}/scripts/buildsystems/vcpkg.cmake")) {
+      if (!fileExists(vcpkg_toolchain_file)) {
         sh """
-          rm -rf /opt/dependencies/${vcpkg_name}
-          echo "\$(date +%F_%T): ${scmVars.GIT_LOCAL_BRANCH} start  build /opt/dependencies/${vcpkg_name}..." >> /opt/dependencies/vcpkg-map.txt
-          bash vcpkg/build_iroha_deps.sh '/opt/dependencies/${vcpkg_name}' '${env.WORKSPACE}/vcpkg'
-          echo "\$(date +%F_%T): ${scmVars.GIT_LOCAL_BRANCH} finish build /opt/dependencies/${vcpkg_name}" >> /opt/dependencies/vcpkg-map.txt
-          ls -la /opt/dependencies/${vcpkg_name}
+          rm -rf /opt/dependencies/${vcpkg_path}
+          echo "\$(date +%F_%T): ${scmVars.GIT_LOCAL_BRANCH} start  build ${vcpkg_path}..." >> /opt/dependencies/vcpkg-map.txt
+          bash vcpkg/build_iroha_deps.sh '${vcpkg_path}' '${env.WORKSPACE}/vcpkg'
+          echo "\$(date +%F_%T): ${scmVars.GIT_LOCAL_BRANCH} finish build ${vcpkg_path}" >> /opt/dependencies/vcpkg-map.txt
+          ls -la ${vcpkg_path}
         """
       }
     }
@@ -79,7 +80,7 @@ def buildSteps(int parallelism, List compilerVersions, String build_type, boolea
         -DFUZZING=${cmakeBooleanOption[fuzzing]} \
         -DPACKAGE_TGZ=${cmakeBooleanOption[packagebuild]} \
         -DUSE_BTF=${cmakeBooleanOption[useBTF]} \
-        -DCMAKE_TOOLCHAIN_FILE=/opt/dependencies/${vcpkg_name}/scripts/buildsystems/vcpkg.cmake ")
+        -DCMAKE_TOOLCHAIN_FILE=${vcpkg_toolchain_file} ")
 
         build.cmakeBuild(buildDir, cmakeBuildOptions, parallelism)
       }
